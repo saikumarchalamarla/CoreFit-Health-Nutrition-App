@@ -83,6 +83,14 @@ stages:
           - task: KubectlInstaller@0
 
           - script: |
+              echo "Current directory:"
+              pwd
+              echo ""
+              echo "Repository contents:"
+              ls -R
+            displayName: Debug Repository Structure
+
+          - script: |
               helm lint $(helmChartPath)
             displayName: Helm Lint
 
