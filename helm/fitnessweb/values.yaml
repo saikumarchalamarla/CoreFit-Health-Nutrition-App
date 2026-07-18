@@ -3,7 +3,7 @@ namespace: fitness
 replicaCount: 1
 
 image:
-  repository: acrplatformdemo001.azurecr.io/fitnessweb
+  repository: acrplatformdemo123.azurecr.io/fitnessweb
   tag: latest
   pullPolicy: Always
 
