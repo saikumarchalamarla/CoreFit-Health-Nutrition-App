@@ -1,0 +1,121 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+
+  azureServiceConnection: 'platform-sc'
+  acrName: 'acrplatformdemo001'
+  imageRepository: 'fitnessweb'
+
+  acrServiceConnection: 'acr-sc'
+
+  resourceGroup: 'rg-platform-demo'
+  aksCluster: 'aks-platform-demo'
+
+  helmChartPath: 'helm/fitnessweb'
+
+stages:
+
+
+# ===========================
+# Build and Push
+# ===========================
+
+- stage: BuildAndPush
+
+
+  jobs:
+
+  - job: BuildAndPushImage
+    displayName: Build and Push Image
+    steps:
+
+    - checkout: self
+
+    - task: Docker@2
+
+      displayName: Push Docker Image
+
+      inputs:
+
+        command: buildAndPush
+
+        repository: $(imageRepository)
+
+        Dockerfile: $(Build.SourcesDirectory)/Dockerfile
+
+        buildContext: $(Build.SourcesDirectory)
+
+    
+        containerRegistry: $(acrServiceConnection)
+
+        tags: |
+          $(Build.BuildId)-$(Build.SourceBranchName)
+
+
+
+# ===========================
+# Deploy
+# ===========================
+
+- stage: Deploy
+  displayName: Deploy to AKS
+  dependsOn: BuildAndPush
+
+  jobs:
+  - deployment: DeployAKS
+    environment: aks-dev
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - checkout: self
+
+          - task: HelmInstaller@1
+            inputs:
+              helmVersionToInstall: latest
+
+          - task: KubectlInstaller@0
+
+          - script: |
+              helm lint $(helmChartPath)
+            displayName: Helm Lint
+
+          - task: AzureCLI@2
+            displayName: Get AKS Credentials
+
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+
+              inlineScript: |
+                az aks get-credentials \
+                  --resource-group $(resourceGroup) \
+                  --name $(aksCluster) \
+                  --overwrite-existing
+
+          - script: |
+              kubectl get nodes
+            displayName: Verify AKS Connection
+
+          - script: |
+              helm upgrade --install fitnessweb $(helmChartPath) \
+                --namespace fitness \
+                --create-namespace \
+                --wait \
+                --timeout 10m \
+                --set image.repository=$(acrName).azurecr.io/$(imageRepository) \
+                --set image.tag=$(Build.BuildId)-$(Build.SourceBranchName)
+            displayName: Deploy with Helm
+
+          - script: |
+              kubectl rollout status deployment/fitnessweb \
+                -n fitness \
+                --timeout=300s
+            displayName: Wait for Rollout
