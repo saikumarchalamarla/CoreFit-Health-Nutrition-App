@@ -21,6 +21,14 @@ spec:
     spec:
 
       containers:
+      - name: fitnessweb
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        command:
+          - sh
+          - -c
+          - |
+            python manage.py migrate
+            exec gunicorn gym_project.wsgi:application --bind 0.0.0.0:8000
 
       - name: fitnessweb
 
