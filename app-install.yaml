@@ -7,7 +7,7 @@ pool:
 variables:
 
   azureServiceConnection: 'platform-sc'
-  acrName: 'acrplatformdemo001'
+  acrName: 'acrplatformdemo123'
   imageRepository: 'fitnessweb'
 
   acrServiceConnection: 'acr-sc'
