@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: fitnessweb
+
+spec:
+
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: fitnessweb
+
+  template:
+
+    metadata:
+      labels:
+        app: fitnessweb
+
+    spec:
+
+      containers:
+
+      - name: fitnessweb
+
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+        ports:
+
+        - containerPort: {{ .Values.containerPort }}
+
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
