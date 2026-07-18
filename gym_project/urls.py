@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path
 from gym_nutrition import views
 from django.http import HttpResponse
+from django.conf import settings
+from django.conf.urls.static import static
 
 def health(request):
     return HttpResponse("OK")
@@ -35,3 +37,5 @@ urlpatterns = [
     path("health/", health),
 ]
 
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
