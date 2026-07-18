@@ -3,9 +3,9 @@ kind: Deployment
 
 metadata:
   name: fitnessweb
+  namespace: fitness
 
 spec:
-
   replicas: {{ .Values.replicaCount }}
 
   selector:
@@ -13,32 +13,25 @@ spec:
       app: fitnessweb
 
   template:
-
     metadata:
       labels:
         app: fitnessweb
 
     spec:
-
       containers:
-      - name: fitnessweb
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        command:
-          - sh
-          - -c
-          - |
-            python manage.py migrate
-            exec gunicorn gym_project.wsgi:application --bind 0.0.0.0:8000
+        - name: fitnessweb
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
 
-      - name: fitnessweb
+          command:
+            - sh
+            - -c
+            - |
+              python manage.py migrate
+              exec gunicorn gym_project.wsgi:application --bind 0.0.0.0:8000
 
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.containerPort }}
 
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-
-        ports:
-
-        - containerPort: {{ .Values.containerPort }}
-
-        resources:
-{{ toYaml .Values.resources | indent 10 }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
