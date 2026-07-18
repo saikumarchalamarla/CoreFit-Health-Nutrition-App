@@ -17,6 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from gym_nutrition import views
+from django.http import HttpResponse
+
+def health(request):
+    return HttpResponse("OK")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,5 +32,6 @@ urlpatterns = [
     path('add-to-cart/<int:sub_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/', views.view_cart, name='view_cart'),
     path('checkout/', views.checkout, name='checkout'),
+    path("health/", health),
 ]
 
